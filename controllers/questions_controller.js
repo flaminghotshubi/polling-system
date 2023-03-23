@@ -2,7 +2,7 @@ const Question = require('../models/question');
 const Option = require('../models/option');
 const mongoose = require('mongoose');
 
-//controller to get list of questions
+//controller to get list of questions - only id and title
 module.exports.allQuestions = async function (req, res) {
     try {
         let questions = await Question.find({}).sort({ "createdAt": -1 }).select('id title');
@@ -21,7 +21,9 @@ module.exports.allQuestions = async function (req, res) {
 //controller to get question by id
 module.exports.questionById = async function (req, res) {
     try {
+        //check if id is objectid
         if (mongoose.isValidObjectId(req.params.id)) {
+            //check if question exists with the id and populate options
             let ques = await Question.findById(req.params.id)
                 .populate({
                     path: 'options',
@@ -54,6 +56,7 @@ module.exports.questionById = async function (req, res) {
 module.exports.create = async function (req, res) {
     try {
         if (req.body.title) {
+            //read the title for question from request body
             let ques = await Question.create({ title: req.body.title })
             return res.status(200).json({
                 message: "Question created successfully!",
@@ -75,17 +78,22 @@ module.exports.create = async function (req, res) {
 //controller for question deletion api
 module.exports.delete = async function (req, res) {
     try {
+        //check if id is objectid
         if (mongoose.isValidObjectId(req.params.id)) {
+            //get the question using id
             let ques = await Question.findById(req.params.id);
             if (ques) {
+                //get the options for the question
                 let options = await Option.find({ question: req.params.id });
                 for (let option of options) {
+                    //return if any option has votes
                     if (option.votes > 0) {
                         return res.status(200).json({
                             message: "One of the options has votes. Cannot delete the question"
                         })
                     }
                 }
+                //delete the options and question
                 await Option.deleteMany({ question: req.params.id });
                 await Question.findByIdAndRemove(req.params.id);
                 return res.status(200).json({

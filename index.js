@@ -15,7 +15,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // api path folder
 app.use('/', require('./routes'));
-//console.log(req.header('host'));
 
 //start the server
 var server = app.listen(port, hostname, function (err) {
@@ -27,7 +26,3 @@ var server = app.listen(port, hostname, function (err) {
         console.log('express server running at http://' + host + ':' + port)
     }
 });
-
-
-
-
